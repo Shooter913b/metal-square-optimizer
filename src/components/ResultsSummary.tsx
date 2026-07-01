@@ -1,12 +1,38 @@
 "use client";
 
-import type { OptimizeResult } from "@/lib/types";
+import type { OptimizeResult, StockUsage } from "@/lib/types";
 import { formatCurrency, formatLength } from "@/lib/units";
 
 type ResultsSummaryProps = {
   result: OptimizeResult | null;
   error: string | null;
 };
+
+type BarSummaryRow = {
+  stockLength: number;
+  cost: number;
+  quantity: number;
+};
+
+function summarizeBars(stocks: StockUsage[]): BarSummaryRow[] {
+  const byLength = new Map<string, BarSummaryRow>();
+
+  for (const stock of stocks) {
+    const key = `${stock.stockLength}:${stock.cost}`;
+    const existing = byLength.get(key);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      byLength.set(key, {
+        stockLength: stock.stockLength,
+        cost: stock.cost,
+        quantity: 1,
+      });
+    }
+  }
+
+  return [...byLength.values()].sort((a, b) => a.stockLength - b.stockLength);
+}
 
 export function ResultsSummary({ result, error }: ResultsSummaryProps) {
   if (error) {
@@ -25,6 +51,8 @@ export function ResultsSummary({ result, error }: ResultsSummaryProps) {
       </section>
     );
   }
+
+  const barSummary = summarizeBars(result.stocks);
 
   return (
     <section className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -57,6 +85,30 @@ export function ResultsSummary({ result, error }: ResultsSummaryProps) {
             <li key={warning}>• {warning}</li>
           ))}
         </ul>
+      ) : null}
+
+      {barSummary.length ? (
+        <div className="mt-4">
+          <h3 className="text-sm font-semibold">Stock to buy</h3>
+          <div className="mt-2 overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left">
+                  <th className="pb-2 pr-4 font-medium text-muted">Bar length</th>
+                  <th className="pb-2 font-medium text-muted">Qty</th>
+                </tr>
+              </thead>
+              <tbody>
+                {barSummary.map((row) => (
+                  <tr key={`${row.stockLength}-${row.cost}`} className="border-b border-border/70">
+                    <td className="py-2 pr-4 font-medium">{formatLength(row.stockLength)}</td>
+                    <td className="py-2">{row.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       ) : null}
     </section>
   );

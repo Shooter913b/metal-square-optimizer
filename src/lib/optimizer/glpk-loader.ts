@@ -1,14 +1,11 @@
 import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 import GLPK, { type GLPK as GlpkInstance } from "glpk.js";
 
 let glpkInstance: GlpkInstance | null = null;
 
 function resolveWasmPath(): string {
-  const require = createRequire(path.join(process.cwd(), "package.json"));
-  const packageEntry = require.resolve("glpk.js");
-  return path.join(path.dirname(packageEntry), "glpk.wasm");
+  return path.join(process.cwd(), "node_modules", "glpk.js", "dist", "glpk.wasm");
 }
 
 export function getGlpk(): GlpkInstance {

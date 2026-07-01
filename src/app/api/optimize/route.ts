@@ -1,4 +1,4 @@
-import { runOptimizeLocal } from "@/lib/optimizer";
+import { runOptimizeLocal } from "@/lib/optimizer/server";
 import type { DemandItem, OptimizeOptions, StockOption } from "@/lib/types";
 import { OptimizationError } from "@/lib/validation";
 
